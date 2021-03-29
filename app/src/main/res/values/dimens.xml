@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="image_width">66dp</dimen>
+    <dimen name="big_text_size">18sp</dimen>
+    <dimen name="medium_text_size">16sp</dimen>
+    <dimen name="small_text_size">12sp</dimen>
+    <dimen name="default_big_padding">12dp</dimen>
+    <dimen name="default_medium_padding">8dp</dimen>
+    <dimen name="default_small_padding">6dp</dimen>
+    <dimen name="menu_selected_dimen">28sp</dimen>
+    <dimen name="menu_unselected_dimen">18sp</dimen>
+</resources>

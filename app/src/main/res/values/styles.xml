@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="fontFamily">@font/montserrat</item>
+        <item name="android:fontFamily">@font/montserrat</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:textSize">@dimen/menu_unselected_dimen</item>
+        <item name="android:textColor">@color/menu_unselected_color</item>
+    </style>
+    <style name="TextAppearance.MyApp.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="fontFamily">@font/montserrat</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/menu_selected_dimen</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+</resources>

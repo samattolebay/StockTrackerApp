@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/default_medium_padding">
+
+    <ImageView
+        android:id="@+id/logoImage"
+        android:layout_width="@dimen/image_width"
+        android:layout_height="0dp"
+        android:contentDescription="@string/company_logo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="h,1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
+
+    <TextView
+        android:id="@+id/tickerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/default_big_padding"
+        android:fontFamily="@font/montserrat"
+        android:textSize="@dimen/big_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/nameText"
+        app:layout_constraintStart_toEndOf="@+id/logoImage"
+        app:layout_constraintTop_toTopOf="@+id/logoImage"
+        tools:text="YNDX" />
+
+    <TextView
+        android:id="@+id/nameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/small_text_size"
+        app:layout_constraintBottom_toBottomOf="@+id/logoImage"
+        app:layout_constraintStart_toStartOf="@+id/tickerText"
+        app:layout_constraintTop_toBottomOf="@+id/tickerText"
+        tools:text="Yandex, LLC" />
+
+    <ImageView
+        android:id="@+id/favouriteImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/default_small_padding"
+        android:contentDescription="@string/favourite"
+        app:layout_constraintBottom_toBottomOf="@+id/tickerText"
+        app:layout_constraintDimensionRatio="w,1:1"
+        app:layout_constraintStart_toEndOf="@+id/tickerText"
+        app:layout_constraintTop_toTopOf="@+id/tickerText"
+        app:srcCompat="@drawable/ic_not_favourite" />
+
+    <TextView
+        android:id="@+id/currentPriceText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat"
+        android:textSize="@dimen/big_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/dayDeltaText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/logoImage"
+        tools:text="$72.16" />
+
+    <TextView
+        android:id="@+id/dayDeltaText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/green"
+        android:textSize="@dimen/small_text_size"
+        app:layout_constraintBottom_toBottomOf="@+id/logoImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentPriceText"
+        tools:text="+$ 0.12 (1,15%)" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
