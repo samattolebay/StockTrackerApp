@@ -20,7 +20,9 @@ const val adapter = "StocksAdapter"
 class StocksAdapter(
     private val onViewClick: (stock: Stock) -> Unit,
     private val onFavouriteClick: (stock: Stock) -> Unit,
-    private val resources: Resources
+    private val resources: Resources,
+    private val getCurrentPrice: (ticker: String) -> Float,
+    private val getDayDelta: (ticker: String) -> Float
 ) : ListAdapter<Stock, StocksAdapter.StockViewHolder>(STOCKS_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockViewHolder {
@@ -29,7 +31,7 @@ class StocksAdapter(
 
     override fun onBindViewHolder(holder: StockViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current, onViewClick, onFavouriteClick, position)
+        holder.bind(current, onViewClick, onFavouriteClick, position, getCurrentPrice, getDayDelta)
     }
 
     class StockViewHolder(itemView: View, resources: Resources) :
@@ -47,23 +49,25 @@ class StocksAdapter(
             current: Stock,
             onViewClick: (stock: Stock) -> Unit,
             onFavouriteClick: (stock: Stock) -> Unit,
-            position: Int
+            position: Int,
+            getCurrentPrice: (ticker: String) -> Float,
+            getDayDelta: (ticker: String) -> Float
         ) {
             tickerText.text = current.ticker
-            nameText.text = current.companyName
-            currentPriceText.text = current.currentPrice.toString()
-            dayDeltaText.text = current.dayDelta.toString()
-            if (current.dayDelta < 0) {
-                dayDeltaText.setTextColor(redColor)
-            } else {
-                dayDeltaText.setTextColor(greenColor)
-            }
-            favouriteImage.setImageResource(current.imageResource)
+            nameText.text = current.name
+            currentPriceText.text = getCurrentPrice(current.ticker).toString()
+            val dayDelta = getDayDelta(current.ticker)
+            val dayDeltaTextColor = if (dayDelta < 0f) redColor else greenColor
+            dayDeltaText.setTextColor(dayDeltaTextColor)
+            dayDeltaText.text = dayDelta.toString()
+
             try {
-                Picasso.get().load(current.image).into(logoImage)
+                Picasso.get().load(current.logo).into(logoImage)
             } catch (ex: Exception) {
                 Log.d(adapter, "Error!")
             }
+
+            setFavouriteImageResource(favouriteImage, current.isFavourite)
 
             if (position % 2 == 0) {
                 itemView.setBackgroundResource(R.color.odd_item_background)
@@ -76,12 +80,15 @@ class StocksAdapter(
             }
             favouriteImage.setOnClickListener {
                 current.isFavourite = !current.isFavourite
-                current.imageResource = if (current.isFavourite) R.drawable.ic_favourite
-                else R.drawable.ic_not_favourite
-
                 onFavouriteClick.invoke(current)
-                favouriteImage.setImageResource(current.imageResource)
+                setFavouriteImageResource(favouriteImage, current.isFavourite)
             }
+        }
+
+        private fun setFavouriteImageResource(favouriteImage: ImageView, favourite: Boolean) {
+            val imageResource =
+                if (favourite) R.drawable.ic_favourite else R.drawable.ic_not_favourite
+            favouriteImage.setImageResource(imageResource)
         }
 
         companion object {
@@ -96,7 +103,7 @@ class StocksAdapter(
     companion object {
         private val STOCKS_COMPARATOR = object : DiffUtil.ItemCallback<Stock>() {
             override fun areItemsTheSame(oldItem: Stock, newItem: Stock): Boolean {
-                return oldItem.id == newItem.id
+                return oldItem.ticker == newItem.ticker
             }
 
             override fun areContentsTheSame(oldItem: Stock, newItem: Stock): Boolean {

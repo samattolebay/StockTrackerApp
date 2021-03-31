@@ -36,6 +36,12 @@ class MainViewModel(
             repository.deleteStocks()
         }
     }
+
+    fun getPrice(ticker: String) {
+        viewModelScope.launch {
+            repository.getPrice(ticker)
+        }
+    }
 }
 
 class MainViewModelFactory(private val repository: MainRepository) :

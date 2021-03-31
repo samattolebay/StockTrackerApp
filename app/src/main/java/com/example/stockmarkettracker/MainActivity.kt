@@ -3,14 +3,18 @@ package com.example.stockmarkettracker
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.stockmarkettracker.adapter.StocksAdapter
+import com.example.stockmarkettracker.database.Stock
 import com.example.stockmarkettracker.databinding.ActivityMainBinding
 import com.example.stockmarkettracker.details.DetailsActivity
 import com.example.stockmarkettracker.viewmodel.MainViewModel
 import com.example.stockmarkettracker.viewmodel.MainViewModelFactory
 import com.finnhub.api.infrastructure.ApiClient
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 const val STOCK = "Stock"
 const val API_KEY = "c1g5qov48v6p69n8mnmg"
@@ -41,12 +45,14 @@ class MainActivity : AppCompatActivity() {
     private fun observeVm() {
         viewModel.stocks.observe(this, Observer {
             if (stocksButtonClicked) {
+                    Log.d("MainActivity", "Observed change in viewModel.stocks")
                 (binding.recyclerView.adapter as StocksAdapter).submitList(it)
             }
         })
 
         viewModel.favouriteStocks.observe(this, Observer {
             if (!stocksButtonClicked) {
+                Log.d("MainActivity", "Observed change in viewModel.favouriteStocks")
                 (binding.recyclerView.adapter as StocksAdapter).submitList(it)
             }
         })
@@ -73,7 +79,8 @@ class MainActivity : AppCompatActivity() {
                     })
                 },
                 { stock -> viewModel.insertStock(stock) },
-                resources
+                resources,
+                { ticker -> viewModel.getPrice(ticker) }
             )
 
         binding.stocksButton.setOnClickListener {
