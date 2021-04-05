@@ -1,6 +1,6 @@
 package com.example.stockmarkettracker.adapter
 
-import android.content.res.Resources
+import android.content.res.ColorStateList
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,66 +14,78 @@ import com.example.stockmarkettracker.R
 import com.example.stockmarkettracker.database.Stock
 import com.squareup.picasso.Picasso
 import java.lang.Exception
-
-const val adapter = "StocksAdapter"
+import kotlin.math.absoluteValue
 
 class StocksAdapter(
     private val onViewClick: (stock: Stock) -> Unit,
     private val onFavouriteClick: (stock: Stock) -> Unit,
-    private val resources: Resources,
-    private val getCurrentPrice: (ticker: String) -> Float,
-    private val getDayDelta: (ticker: String) -> Float
+    private val setPrice: (ticker: String) -> Unit,
+    private val redColor: ColorStateList,
+    private val greenColor: ColorStateList
 ) : ListAdapter<Stock, StocksAdapter.StockViewHolder>(STOCKS_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockViewHolder {
-        return StockViewHolder.create(parent, resources)
+        return StockViewHolder.create(parent)
     }
 
     override fun onBindViewHolder(holder: StockViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current, onViewClick, onFavouriteClick, position, getCurrentPrice, getDayDelta)
+        holder.bind(
+            current,
+            onViewClick,
+            onFavouriteClick,
+            position,
+            setPrice,
+            redColor,
+            greenColor
+        )
     }
 
-    class StockViewHolder(itemView: View, resources: Resources) :
-        RecyclerView.ViewHolder(itemView) {
+    class StockViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tickerText: TextView = itemView.findViewById(R.id.tickerText)
         private val nameText: TextView = itemView.findViewById(R.id.nameText)
         private val currentPriceText: TextView = itemView.findViewById(R.id.currentPriceText)
         private val dayDeltaText: TextView = itemView.findViewById(R.id.dayDeltaText)
         private val logoImage: ImageView = itemView.findViewById(R.id.logoImage)
         private val favouriteImage: ImageView = itemView.findViewById(R.id.favouriteImage)
-        private val redColor = resources.getColor(R.color.red)
-        private val greenColor = resources.getColor(R.color.green)
 
         fun bind(
             current: Stock,
             onViewClick: (stock: Stock) -> Unit,
             onFavouriteClick: (stock: Stock) -> Unit,
             position: Int,
-            getCurrentPrice: (ticker: String) -> Float,
-            getDayDelta: (ticker: String) -> Float
+            setPrice: (ticker: String) -> Unit,
+            redColor: ColorStateList,
+            greenColor: ColorStateList
         ) {
             tickerText.text = current.ticker
             nameText.text = current.name
-            currentPriceText.text = getCurrentPrice(current.ticker).toString()
-            val dayDelta = getDayDelta(current.ticker)
-            val dayDeltaTextColor = if (dayDelta < 0f) redColor else greenColor
+
+            currentPriceText.text = "$${current.price}"
+            val dayDeltaTextColor = if (current.dayDelta < 0f) redColor else greenColor
+            var dayDelta = if (current.dayDelta < 0f) "-" else "+"
+            dayDelta += "$%.2f (%.2f%%)"
+            dayDeltaText.text = dayDelta.format(
+                (current.price - current.previousPrice).absoluteValue,
+                current.dayDelta.absoluteValue
+            )
             dayDeltaText.setTextColor(dayDeltaTextColor)
-            dayDeltaText.text = dayDelta.toString()
+            if (current.price == 0f) {
+                setPrice(current.ticker)
+            }
 
             try {
                 Picasso.get().load(current.logo).into(logoImage)
             } catch (ex: Exception) {
-                Log.d(adapter, "Error!")
+                Log.d("StocksAdapter", ex.toString())
+                logoImage.setImageResource(R.drawable.ic_no_image)
             }
 
             setFavouriteImageResource(favouriteImage, current.isFavourite)
 
-            if (position % 2 == 0) {
-                itemView.setBackgroundResource(R.color.odd_item_background)
-            } else {
-                itemView.setBackgroundResource(R.color.white)
-            }
+            val backgroundResource =
+                if (position % 2 == 0) R.color.odd_item_background else R.color.white
+            itemView.setBackgroundResource(backgroundResource)
 
             itemView.setOnClickListener {
                 onViewClick.invoke(current)
@@ -92,10 +104,10 @@ class StocksAdapter(
         }
 
         companion object {
-            fun create(parent: ViewGroup, resources: Resources): StockViewHolder {
+            fun create(parent: ViewGroup): StockViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
                     .inflate(R.layout.stock_item, parent, false)
-                return StockViewHolder(view, resources)
+                return StockViewHolder(view)
             }
         }
     }
