@@ -1,6 +1,5 @@
 package com.example.stockmarkettracker.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.*
 import com.example.stockmarkettracker.database.MainRepository
 import com.example.stockmarkettracker.database.Stock
@@ -9,31 +8,40 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     private val repository: MainRepository
 ) : ViewModel() {
-    private val _stocks = repository.stocks.asLiveData()
+    private var _stocks =
+        repository.stocks.asLiveData() as MutableLiveData<List<Stock>>
     val stocks: LiveData<List<Stock>>
         get() = _stocks
 
-    private val _favouriteStocks = repository.favouriteStocks.asLiveData()
+    private var _favouriteStocks =
+        repository.favouriteStocks.asLiveData() as MutableLiveData<List<Stock>>
     val favouriteStocks: LiveData<List<Stock>>
         get() = _favouriteStocks
 
-    fun fetchStock() {
-        Log.d("MainViewModel", "Launch coroutine to fetch Stock")
+    fun fetchStocks() {
         viewModelScope.launch {
-            repository.fetchStocks("MSFT") // AAPL, MSFT, YNDX
+            repository.fetchStocks()
         }
     }
 
     fun insertStock(stock: Stock) {
-        Log.d("MainViewModel", "Launch coroutine to insert Stock")
         viewModelScope.launch {
             repository.insertStock(stock)
         }
     }
 
-    fun deleteStocks() {
+    fun setPrices(ticker: String) {
         viewModelScope.launch {
-            repository.deleteStocks()
+            repository.setPrice(ticker)
+        }
+    }
+
+    fun searchStocks(newText: String?) {
+        viewModelScope.launch {
+            val query = if (newText == null) "%%" else "%$newText%"
+            val result = repository.getSearchStocks(query)
+            _stocks.value = result
+            _favouriteStocks.value = result.filter { it.isFavourite }
         }
     }
 }

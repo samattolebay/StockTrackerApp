@@ -3,7 +3,8 @@ package com.example.stockmarkettracker
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.lifecycle.Observer
+import android.widget.SearchView
+import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import com.example.stockmarkettracker.adapter.StocksAdapter
 import com.example.stockmarkettracker.databinding.ActivityMainBinding
@@ -31,21 +32,21 @@ class MainActivity : AppCompatActivity() {
 
         showDetailsIntent = Intent(this, DetailsActivity::class.java)
 
-        initViews()
         initVm()
+        initViews()
         observeVm()
 
         ApiClient.apiKey["token"] = API_KEY
     }
 
     private fun observeVm() {
-        viewModel.stocks.observe(this, Observer {
+        viewModel.stocks.observe(this, {
             if (stocksButtonClicked) {
                 (binding.recyclerView.adapter as StocksAdapter).submitList(it)
             }
         })
 
-        viewModel.favouriteStocks.observe(this, Observer {
+        viewModel.favouriteStocks.observe(this, {
             if (!stocksButtonClicked) {
                 (binding.recyclerView.adapter as StocksAdapter).submitList(it)
             }
@@ -59,9 +60,13 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this, factory)
             .get(MainViewModel::class.java)
+
+        viewModel.fetchStocks()
     }
 
     private fun initViews() {
+        val redColor = getColorStateList(R.color.red)
+        val greenColor = getColorStateList(R.color.green)
         binding.recyclerView.adapter =
             StocksAdapter(
                 { stock ->
@@ -73,29 +78,47 @@ class MainActivity : AppCompatActivity() {
                     })
                 },
                 { stock -> viewModel.insertStock(stock) },
-                resources
+                { ticker -> viewModel.setPrices(ticker) },
+                redColor,
+                greenColor
             )
 
-        binding.stocksButton.setOnClickListener {
+        binding.stocksText.setOnClickListener {
             if (!stocksButtonClicked) {
                 stocksButtonClicked = true
                 (binding.recyclerView.adapter as StocksAdapter).submitList(viewModel.stocks.value)
+                setTextSize(binding.stocksText, 28)
+                setTextSize(binding.favouriteText, 18)
+                binding.stocksText.setTextColor(getColor(R.color.menu_selected_color))
+                binding.favouriteText.setTextColor(getColor(R.color.menu_unselected_color))
             }
         }
 
-        binding.favouriteButton.setOnClickListener {
+        binding.favouriteText.setOnClickListener {
             if (stocksButtonClicked) {
                 stocksButtonClicked = false
                 (binding.recyclerView.adapter as StocksAdapter).submitList(viewModel.favouriteStocks.value)
+                setTextSize(binding.stocksText, 18)
+                setTextSize(binding.favouriteText, 28)
+                binding.stocksText.setTextColor(getColor(R.color.menu_unselected_color))
+                binding.favouriteText.setTextColor(getColor(R.color.menu_selected_color))
             }
         }
 
-        binding.floatingActionButton.setOnClickListener {
-            viewModel.fetchStock()
-        }
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                binding.searchView.clearFocus()
+                return false
+            }
 
-        binding.floatingActionButton2.setOnClickListener {
-            viewModel.deleteStocks()
-        }
+            override fun onQueryTextChange(newText: String): Boolean {
+                viewModel.searchStocks(newText)
+                return false
+            }
+        })
+    }
+
+    private fun setTextSize(text: TextView, size: Int) {
+        text.textSize = size.toFloat()
     }
 }

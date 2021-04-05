@@ -2,60 +2,63 @@ package com.example.stockmarkettracker.database
 
 import android.util.Log
 import com.finnhub.api.apis.DefaultApi
-import com.finnhub.api.models.CompanyProfile2
-import com.finnhub.api.models.Quote
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.random.Random
 
 class MainRepository(
     private val stockDao: StockDao,
-    private val finnhubApi: DefaultApi
+    private val finnhubApi: DefaultApi,
+    private val gSon: Gson,
+    private val jsonFileString: String?
 ) {
     val stocks = stockDao.getStocks()
     val favouriteStocks = stockDao.getFavouriteStocks()
 
-    suspend fun fetchStocks(symbol: String) {
-        Log.d("MainRepository", "Inside the first context")
+    suspend fun getSearchStocks(query: String): List<Stock> = stockDao.getSearchStocks(query)
+
+    suspend fun fetchStocks() {
         withContext(Dispatchers.IO) {
-            var companyInfo = CompanyProfile2()
-            var companyPrice = Quote()
-            coroutineScope {
-                launch {
-                    companyInfo =
-                        finnhubApi.companyProfile2(symbol = symbol, isin = null, cusip = null)
-                    companyPrice = finnhubApi.quote(symbol = symbol)
-                }
+            val listStockType = object : TypeToken<List<Stock>>() {}.type
+
+            val stocks: List<Stock> = gSon.fromJson(jsonFileString, listStockType)
+            stocks.forEach {
+                val stock = stockDao.getStock(it.ticker)
+                if (stock != null) it.isFavourite = stock.isFavourite
+                insertStock(it)
             }
-            Log.d("MainRepository", "Creating Stock, ${companyInfo}, $companyPrice")
-            val stock = Stock(
-                Random.nextInt(1000),
-                companyInfo.ticker!!,
-                companyInfo.name!!,
-                companyPrice.c!!,
-                calculateDelta(companyPrice.c!!, companyPrice.pc!!),
-                image = companyInfo.logo
-            )
-            stockDao.insert(stock)
         }
     }
 
-    private fun calculateDelta(currentPrice: Float, previousPrice: Float): Float {
-        return (previousPrice - currentPrice) / previousPrice
+    private fun calculateDayDelta(currentPrice: Float, previousPrice: Float): Float {
+        return (currentPrice - previousPrice) / previousPrice
     }
 
     suspend fun insertStock(stock: Stock) {
-        Log.d("MainRepository", "Inside the insert Stock")
         withContext(Dispatchers.IO) {
             stockDao.insert(stock)
         }
     }
 
-    suspend fun deleteStocks() {
+    suspend fun setPrice(ticker: String) {
         withContext(Dispatchers.IO) {
-            stockDao.deleteStocks()
+            try {
+                val companyPrice = finnhubApi.quote(ticker)
+                val stock = stockDao.getStock(ticker)
+                if (stock != null) {
+                    val currentPrice = companyPrice.c ?: 0f
+                    val dayDelta = calculateDayDelta(companyPrice.c ?: 0f, companyPrice.pc ?: 1f)
+                    stock.price = currentPrice
+                    stock.previousPrice = companyPrice.pc ?: 1f
+                    stock.dayDelta = dayDelta
+                    insertStock(stock)
+                } else {
+                    Log.d("MainRepository", "No such stock in database, $ticker")
+                }
+            } catch (exception: Exception) {
+                Log.d("MainRepository", exception.toString())
+            }
         }
     }
 }
