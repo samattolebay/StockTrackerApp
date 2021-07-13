@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/stock_item_background"
     android:padding="@dimen/default_medium_padding">
 
     <ImageView
@@ -28,14 +29,23 @@
         app:layout_constraintBottom_toTopOf="@+id/nameText"
         app:layout_constraintStart_toEndOf="@+id/logoImage"
         app:layout_constraintTop_toTopOf="@+id/logoImage"
+        app:layout_constraintVertical_chainStyle="packed"
         tools:text="YNDX" />
 
     <TextView
         android:id="@+id/nameText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/default_medium_padding"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/black"
         android:textSize="@dimen/small_text_size"
+        app:layout_constrainedHeight="true"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/logoImage"
+        app:layout_constraintEnd_toStartOf="@id/dayDeltaText"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/tickerText"
         app:layout_constraintTop_toBottomOf="@+id/tickerText"
         tools:text="Yandex, LLC" />
@@ -59,10 +69,9 @@
         android:fontFamily="@font/montserrat"
         android:textSize="@dimen/big_text_size"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/dayDeltaText"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tickerText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/logoImage"
-        tools:text="$72.16" />
+        tools:text="$131.93" />
 
     <TextView
         android:id="@+id/dayDeltaText"
@@ -70,9 +79,8 @@
         android:layout_height="wrap_content"
         android:textColor="@color/green"
         android:textSize="@dimen/small_text_size"
-        app:layout_constraintBottom_toBottomOf="@+id/logoImage"
+        app:layout_constraintBaseline_toBaselineOf="@+id/nameText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/currentPriceText"
         tools:text="+$ 0.12 (1,15%)" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

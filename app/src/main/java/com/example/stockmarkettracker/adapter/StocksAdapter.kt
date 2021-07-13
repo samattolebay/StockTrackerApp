@@ -61,7 +61,7 @@ class StocksAdapter(
             tickerText.text = current.ticker
             nameText.text = current.name
 
-            currentPriceText.text = "$${current.price}"
+            currentPriceText.text = "$%s".format(current.price)
             val dayDeltaTextColor = if (current.dayDelta < 0f) redColor else greenColor
             var dayDelta = if (current.dayDelta < 0f) "-" else "+"
             dayDelta += "$%.2f (%.2f%%)"
@@ -70,9 +70,7 @@ class StocksAdapter(
                 current.dayDelta.absoluteValue
             )
             dayDeltaText.setTextColor(dayDeltaTextColor)
-            if (current.price == 0f) {
-                setPrice(current.ticker)
-            }
+            setPrice(current.ticker)
 
             try {
                 Picasso.get().load(current.logo).into(logoImage)
@@ -84,7 +82,7 @@ class StocksAdapter(
             setFavouriteImageResource(favouriteImage, current.isFavourite)
 
             val backgroundResource =
-                if (position % 2 == 0) R.color.odd_item_background else R.color.white
+                if (position % 2 == 0) R.drawable.odd_item_background else R.drawable.stock_item_background
             itemView.setBackgroundResource(backgroundResource)
 
             itemView.setOnClickListener {

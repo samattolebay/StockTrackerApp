@@ -19,5 +19,6 @@ data class Stock(
     var logo: String? = null,
     var price: Float = 0f,
     var previousPrice: Float = 0f,
-    var dayDelta: Float = 0f
+    var dayDelta: Float = 0f,
+    var isPriceLoaded: Boolean = false
 ) : Parcelable
